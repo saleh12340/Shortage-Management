@@ -1,0 +1,6 @@
+{
+  "name": "نواقص العزي",
+  "description": "تطبيق تسجيل وإدارة نواقص البقالة والمواد الغذائية بنظام الشقين المتوازيين والإدخال الصوتي والطباعة",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
