@@ -6,7 +6,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -50,7 +49,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.domain.EscPosGenerator
@@ -110,24 +108,6 @@ fun GroceryAppMainScreen(
         }
     }
 
-    val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { grants ->
-        if (grants.values.all { it }) {
-            val bitmap = EscPosGenerator.create58mmReceiptBitmap(uiState.currentPageName, uiState.rightItems, uiState.leftItems)
-            PrintHelper.printBluetoothReceipt(context, bitmap, uiState.currentPageName) { message -> viewModel.showToast(message) }
-        } else viewModel.showToast("يلزم السماح بصلاحية Bluetooth للطباعة")
-    }
-
-    fun printBluetooth() {
-        val permissions = if (Build.VERSION.SDK_INT >= 31) arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN) else emptyArray()
-        if (permissions.isNotEmpty() && permissions.any { ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED })
-            bluetoothPermissionLauncher.launch(permissions)
-        else {
-            val bitmap = EscPosGenerator.create58mmReceiptBitmap(uiState.currentPageName, uiState.rightItems, uiState.leftItems)
-            PrintHelper.printBluetoothReceipt(context, bitmap, uiState.currentPageName) { message -> viewModel.showToast(message) }
-        }
-    }
     // Function to check permission before speech recognition
     fun requestAndStartListening(target: SpeechTargetField) {
         val hasPermission = ContextCompat.checkSelfPermission(
