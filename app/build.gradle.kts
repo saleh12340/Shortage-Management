@@ -67,14 +67,14 @@ android {
     abi {
       isEnable = true
       reset()
-      include("arm64-v8a", "armeabi-v7a")
+      include("arm64-v8a")
       // CI distributes one installable APK; keep universal enabled for
       // compatibility with devices using either supported ARM ABI.
-      isUniversalApk = true
+      isUniversalApk = false
     }
   }
 
-  compileOptions {
+  // The app is distributed as an ARM64 APK; limiting packaged locales removes unused resource tables without affecting Arabic/English UI.\n  resourceConfigurations += listOf("ar", "en")\n\n  compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
   }
