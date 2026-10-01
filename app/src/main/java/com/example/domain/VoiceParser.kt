@@ -137,10 +137,13 @@ object VoiceParser {
             }
         }
 
-        // Special case: "حبتين بر" or "كيسين رز"
-        // If word begins with dual suffix like "كرتونين" or "كيسين"
-        val spokenUnits = setOf("حبة", "حبه", "حبات", "كيس", "أكياس", "اكياس", "كرتون", "كرتونات", "علبة", "علبه", "علب", "باكت", "باكتات", "درزن", "دستة", "دسته")
-        while (words.isNotEmpty() && spokenUnits.contains(words.first().trim())) words.removeAt(0)
+        // Keep natural item wording such as "أكياس بر" in the item-name field.
+        // Only remove quantity-packaging words that are themselves the quantity unit
+        // (e.g. "درزن حليب" => "حليب"). This preserves the user's spoken item text.
+        val quantityUnitWords = setOf("درزن", "دستة", "دسته")
+        while (words.isNotEmpty() && quantityUnitWords.contains(words.first().trim())) {
+            words.removeAt(0)
+        }
         val remainingName = words.joinToString(" ").trim()
         if (remainingName.isEmpty()) {
             if (qtyFound) {
