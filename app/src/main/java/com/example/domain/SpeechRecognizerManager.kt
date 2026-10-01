@@ -131,14 +131,8 @@ class SpeechRecognizerManager(private val context: Context) {
         _errorMessage.value = null
 
         if (!isAvailable()) {
-            val fallbackIntent = createSpeechIntent()
-            if (onFallbackToSystemDialog != null) {
-                onFallbackToSystemDialog?.invoke(fallbackIntent, target)
-                return
-            } else {
-                _errorMessage.value = "خدمة التعرف الصوتي غير مثبتة على هذا الجهاز"
-                return
-            }
+            _errorMessage.value = "خدمة التعرف الصوتي غير مثبتة على هذا الجهاز"
+            return
         }
 
         mainHandler.post {
@@ -175,7 +169,7 @@ class SpeechRecognizerManager(private val context: Context) {
     }
 
     /**
-     * Direct submission of recognized text (from fallback dialog or simulated tests).
+     * Direct submission of recognized text (from tests or external recognized text).
      */
     fun submitRecognizedText(text: String, target: SpeechTargetField = _currentTarget.value) {
         val clean = text.trim()
