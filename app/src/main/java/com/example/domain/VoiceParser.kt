@@ -33,7 +33,8 @@ object VoiceParser {
         "عشرة" to 10, "عشره" to 10, "عشر" to 10,
         "أحد عشر" to 11, "احد عشر" to 11, "حداش" to 11, "إحدى عشر" to 11,
         "اثنا عشر" to 12, "إثنا عشر" to 12, "اثناعش" to 12, "درزن" to 12, "دستة" to 12,
-        "ثلاثة عشر" to 13, "اربعة عشر" to 14, "خمسة عشر" to 15,
+        "ثلاثة عشر" to 13, "ثلاثه عشر" to 13, "اربعة عشر" to 14, "أربعة عشر" to 14, "اربعه عشر" to 14, "خمسة عشر" to 15, "خمسه عشر" to 15,
+        "ستة عشر" to 16, "سته عشر" to 16, "سبعة عشر" to 17, "سبعه عشر" to 17, "ثمانية عشر" to 18, "ثمانيه عشر" to 18, "تسعة عشر" to 19, "تسعه عشر" to 19,
         "عشرون" to 20, "عشرين" to 20, "درزنين" to 24, "دستتين" to 24,
         "ثلاثون" to 30, "ثلاثين" to 30, "ثلاثة درازن" to 36,
         "أربعون" to 40, "اربعين" to 40, "اربعون" to 40,
@@ -138,6 +139,8 @@ object VoiceParser {
 
         // Special case: "حبتين بر" or "كيسين رز"
         // If word begins with dual suffix like "كرتونين" or "كيسين"
+        val spokenUnits = setOf("حبة", "حبه", "حبات", "كيس", "أكياس", "اكياس", "كرتون", "كرتونات", "علبة", "علبه", "علب", "باكت", "باكتات", "درزن", "دستة", "دسته")
+        while (words.isNotEmpty() && spokenUnits.contains(words.first().trim())) words.removeAt(0)
         val remainingName = words.joinToString(" ").trim()
         if (remainingName.isEmpty()) {
             if (qtyFound) {
@@ -169,7 +172,8 @@ object VoiceParser {
             '٠' to '0', '١' to '1', '٢' to '2', '٣' to '3', '٤' to '4',
             '٥' to '5', '٦' to '6', '٧' to '7', '٨' to '8', '٩' to '9'
         )
-        val converted = str.map { arabicToEng[it] ?: it }.joinToString("")
+        val normalized = str.trim().replace("،", "").replace(",", "").replace(" ", "")
+        val converted = normalized.map { arabicToEng[it] ?: it }.joinToString("")
         val digitsOnly = converted.filter { it.isDigit() }
         return digitsOnly.toIntOrNull() ?: 0
     }
