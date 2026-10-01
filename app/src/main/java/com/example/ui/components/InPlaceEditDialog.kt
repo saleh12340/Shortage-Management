@@ -3,23 +3,18 @@ package com.example.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.RemoveCircle
-import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +43,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.local.GroceryItemEntity
 import com.example.data.local.SplitSection
 import com.example.ui.theme.PosAmber
@@ -79,20 +76,20 @@ fun InPlaceEditDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = PosCardDark,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(14.dp),
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = null,
                     tint = PosAmber,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "تعديل الصنف في الجدول",
+                    text = "تعديل الصنف",
                     color = PosTextPrimary,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Black
                 )
             }
@@ -100,16 +97,16 @@ fun InPlaceEditDialog(
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // Item Name
                 OutlinedTextField(
                     value = editedName,
                     onValueChange = { editedName = it },
-                    label = { Text("اسم الصنف", color = PosTextMuted) },
+                    label = { Text("اسم الصنف", color = PosTextMuted, fontSize = 12.sp) },
                     textStyle = TextStyle(
                         color = PosTextPrimary,
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     ),
                     singleLine = true,
@@ -128,16 +125,16 @@ fun InPlaceEditDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(PosAmberBg, RoundedCornerShape(10.dp))
-                        .border(1.dp, PosAmber.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .background(PosAmberBg, RoundedCornerShape(8.dp))
+                        .border(1.dp, PosAmber.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 6.dp, vertical = 3.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
                         text = "العدد / الكمية:",
                         color = PosAmberLight,
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
 
@@ -150,9 +147,10 @@ fun InPlaceEditDialog(
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.Default.RemoveCircle,
+                                painter = painterResource(id = R.drawable.ic_remove_circle),
                                 contentDescription = "إنقاص",
-                                tint = PosAmber
+                                tint = PosAmber,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
 
@@ -164,7 +162,7 @@ fun InPlaceEditDialog(
                             },
                             textStyle = TextStyle(
                                 color = PosAmberLight,
-                                fontSize = 16.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,
                                 textAlign = TextAlign.Center
                             ),
@@ -175,7 +173,7 @@ fun InPlaceEditDialog(
                                 unfocusedBorderColor = Color.Transparent
                             ),
                             modifier = Modifier
-                                .width(56.dp)
+                                .width(50.dp)
                                 .onFocusChanged { focusState ->
                                     if (focusState.isFocused) {
                                         qtyTextFieldValue = qtyTextFieldValue.copy(
@@ -194,9 +192,10 @@ fun InPlaceEditDialog(
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.Default.AddCircle,
+                                painter = painterResource(id = R.drawable.ic_add_circle),
                                 contentDescription = "زيادة",
-                                tint = PosAmber
+                                tint = PosAmber,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -205,7 +204,7 @@ fun InPlaceEditDialog(
                 // Section Selector
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     val isRight = currentSection == SplitSection.RIGHT
                     Button(
@@ -216,7 +215,7 @@ fun InPlaceEditDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "الشق الأيمن 🔷",
+                            text = "أيمن 🔷",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -232,7 +231,7 @@ fun InPlaceEditDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "الشق الأيسر 🟢",
+                            text = "أيسر 🟢",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -253,18 +252,18 @@ fun InPlaceEditDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = SplitRightBlue),
                 modifier = Modifier.testTag("save_edit_item_btn")
             ) {
-                Text("حفظ التعديل", fontWeight = FontWeight.Bold)
+                Text("حفظ", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 OutlinedButton(
                     onClick = { onDelete(item.id); onDismiss() },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = PosRedActive),
                     modifier = Modifier.testTag("delete_item_from_dialog_btn")
                 ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(15.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text("حذف")
                 }
 

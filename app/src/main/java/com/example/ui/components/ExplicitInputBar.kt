@@ -15,15 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -42,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +48,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.local.SplitSection
 import com.example.data.local.SuggestionEntity
 import com.example.domain.SpeechTargetField
@@ -84,7 +82,6 @@ fun ExplicitInputBar(
     onStopListening: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Select all on focus for quantity field
     var qtyTextFieldValue by remember(qty) {
         mutableStateOf(TextFieldValue(text = qty, selection = TextRange(0, qty.length)))
     }
@@ -94,22 +91,22 @@ fun ExplicitInputBar(
             .fillMaxWidth()
             .background(PosCardDark, RoundedCornerShape(12.dp))
             .border(1.dp, PosCardBorder, RoundedCornerShape(12.dp))
-            .padding(10.dp)
+            .padding(8.dp)
             .testTag("explicit_input_bar")
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Quantity Section (Compact, Amber themed with +/- and dedicated Mic)
+                // Quantity Section
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .background(PosAmberBg, RoundedCornerShape(10.dp))
-                        .border(1.dp, PosAmber.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
-                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                        .background(PosAmberBg, RoundedCornerShape(8.dp))
+                        .border(1.dp, PosAmber.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 2.dp, vertical = 2.dp)
                 ) {
                     IconButton(
                         onClick = onDecrementQty,
@@ -118,10 +115,10 @@ fun ExplicitInputBar(
                             .testTag("qty_decrement_btn")
                     ) {
                         Icon(
-                            imageVector = Icons.Default.RemoveCircle,
+                            painter = painterResource(id = R.drawable.ic_remove_circle),
                             contentDescription = "إنقاص العدد",
                             tint = PosAmber,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(19.dp)
                         )
                     }
 
@@ -134,7 +131,7 @@ fun ExplicitInputBar(
                         },
                         textStyle = TextStyle(
                             color = PosAmberLight,
-                            fontSize = 16.sp,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Black,
                             textAlign = TextAlign.Center
                         ),
@@ -149,8 +146,8 @@ fun ExplicitInputBar(
                             cursorColor = PosAmber
                         ),
                         modifier = Modifier
-                            .width(42.dp)
-                            .height(40.dp)
+                            .width(38.dp)
+                            .height(38.dp)
                             .onFocusChanged { focusState ->
                                 if (focusState.isFocused) {
                                     qtyTextFieldValue = qtyTextFieldValue.copy(
@@ -168,10 +165,10 @@ fun ExplicitInputBar(
                             .testTag("qty_increment_btn")
                     ) {
                         Icon(
-                            imageVector = Icons.Default.AddCircle,
+                            painter = painterResource(id = R.drawable.ic_add_circle),
                             contentDescription = "زيادة العدد",
                             tint = PosAmber,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(19.dp)
                         )
                     }
 
@@ -186,10 +183,10 @@ fun ExplicitInputBar(
                             .testTag("qty_mic_btn")
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Mic,
+                            painter = painterResource(id = R.drawable.ic_mic),
                             contentDescription = "مايك العدد",
                             tint = if (isListeningQty) PosRedActive else PosAmber,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(17.dp)
                         )
                     }
                 }
@@ -200,14 +197,14 @@ fun ExplicitInputBar(
                     onValueChange = onNameChange,
                     placeholder = {
                         Text(
-                            text = "اكتب اسم الصنف (بر، سكر، رز...)",
+                            text = "اكتب الصنف (بر، سكر، رز...)",
                             color = PosTextMuted,
-                            fontSize = 13.sp
+                            fontSize = 12.sp
                         )
                     },
                     textStyle = TextStyle(
                         color = PosTextPrimary,
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     ),
                     singleLine = true,
@@ -227,10 +224,10 @@ fun ExplicitInputBar(
                             modifier = Modifier.testTag("name_mic_btn")
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Mic,
+                                painter = painterResource(id = R.drawable.ic_mic),
                                 contentDescription = "مايك الصنف",
                                 tint = if (isListeningName) PosRedActive else SplitRightBlue,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(19.dp)
                             )
                         }
                     },
@@ -243,7 +240,7 @@ fun ExplicitInputBar(
                     ),
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp)
+                        .height(42.dp)
                         .testTag("item_name_input_field")
                 )
             }
@@ -254,7 +251,7 @@ fun ExplicitInputBar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Text(
                         text = "مقترح:",
@@ -268,7 +265,7 @@ fun ExplicitInputBar(
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(Color(0xFF1E293B))
                                 .clickable { onSuggestionSelect(suggestion.name) }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .padding(horizontal = 7.dp, vertical = 3.dp)
                         ) {
                             Text(
                                 text = suggestion.name,
@@ -289,10 +286,10 @@ fun ExplicitInputBar(
                     containerColor = if (isRight) SplitRightBlue else SplitLeftGreen,
                     contentColor = Color.White
                 ),
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp)
+                    .height(38.dp)
                     .testTag("add_item_button")
             ) {
                 Row(
@@ -302,12 +299,12 @@ fun ExplicitInputBar(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = if (isRight) "إضافة الصنف إلى [الشق الأيمن 🔷]" else "إضافة الصنف إلى [الشق الأيسر 🟢]",
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Black
                     )
                 }

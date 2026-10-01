@@ -17,16 +17,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CallMerge
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MicNone
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,10 +34,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.local.SplitSection
 import com.example.domain.SpeechTargetField
 import com.example.ui.theme.PosAmber
@@ -52,7 +48,6 @@ import com.example.ui.theme.PosGreenOnline
 import com.example.ui.theme.PosRedActive
 import com.example.ui.theme.PosRedPulse
 import com.example.ui.theme.PosTextMuted
-import com.example.ui.theme.PosTextPrimary
 import com.example.ui.theme.PosTextSecondary
 import com.example.ui.theme.SplitLeftGreen
 import com.example.ui.theme.SplitRightBlue
@@ -82,11 +77,6 @@ fun VoiceModeBar(
         label = "micPulseScale"
     )
 
-    val micButtonColor by animateColorAsState(
-        targetValue = if (isListening) PosRedActive else SplitRightBlue,
-        label = "micColor"
-    )
-
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -107,12 +97,12 @@ fun VoiceModeBar(
                 // Master Push-To-Talk Mic Button
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(52.dp)
+                    modifier = Modifier.size(50.dp)
                 ) {
                     if (isListening) {
                         Box(
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(48.dp)
                                 .scale(pulseScale + (audioRms / 20f))
                                 .background(PosRedPulse.copy(alpha = 0.35f), CircleShape)
                         )
@@ -121,7 +111,7 @@ fun VoiceModeBar(
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(46.dp)
+                            .size(44.dp)
                             .clip(CircleShape)
                             .background(
                                 Brush.verticalGradient(
@@ -144,10 +134,10 @@ fun VoiceModeBar(
                             .testTag("master_mic_button")
                     ) {
                         Icon(
-                            imageVector = if (isListening) Icons.Default.Mic else Icons.Default.MicNone,
+                            painter = painterResource(id = if (isListening) R.drawable.ic_mic else R.drawable.ic_mic_none),
                             contentDescription = "المايك الشامل",
                             tint = Color.White,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
@@ -170,7 +160,7 @@ fun VoiceModeBar(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "جارِ الاستماع... (تحدث بالصنف والكمية)",
+                                text = "استماع... (تحدث بالصنف والكمية)",
                                 color = PosRedPulse,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -186,7 +176,7 @@ fun VoiceModeBar(
                         )
                     } else {
                         Text(
-                            text = "اضغط واستمر للكلام: مثلاً \"خمسة أكياس بر\"",
+                            text = "اضغط للكلام: مثلاً \"خمسة أكياس بر\"",
                             color = PosTextSecondary,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Normal,
@@ -214,10 +204,10 @@ fun VoiceModeBar(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.CallMerge,
+                            painter = painterResource(id = R.drawable.ic_merge),
                             contentDescription = "دمج المكرر",
                             tint = if (autoMerge) PosGreenOnline else PosTextMuted,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(15.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -247,11 +237,11 @@ fun VoiceModeBar(
                             RoundedCornerShape(8.dp)
                         )
                         .clickable { onToggleTargetSection() }
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                        .padding(horizontal = 9.dp, vertical = 6.dp)
                         .testTag("target_switcher_button")
                 ) {
                     Text(
-                        text = if (isRight) "الشق: أيمن 🔷" else "الشق: أيسر 🟢",
+                        text = if (isRight) "أيمن 🔷" else "أيسر 🟢",
                         color = if (isRight) Color(0xFF93C5FD) else Color(0xFFA7F3D0),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.ExtraBold

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,7 +19,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,11 +28,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.local.GroceryItemEntity
 import com.example.data.local.SplitSection
 import com.example.ui.theme.PosAmber
@@ -48,10 +48,8 @@ import com.example.ui.theme.PosTextSecondary
 import com.example.ui.theme.SplitLeftBorder
 import com.example.ui.theme.SplitLeftGreen
 import com.example.ui.theme.SplitLeftGreenDark
-import com.example.ui.theme.SplitLeftGreenLight
 import com.example.ui.theme.SplitRightBlue
 import com.example.ui.theme.SplitRightBlueDark
-import com.example.ui.theme.SplitRightBlueLight
 import com.example.ui.theme.SplitRightBorder
 
 @Composable
@@ -67,7 +65,7 @@ fun DualSplitGrid(
     Row(
         modifier = modifier
             .fillMaxSize()
-            .padding(top = 4.dp),
+            .padding(top = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         // Right Split Panel (50% Width) - Royal Blue Theme
@@ -130,16 +128,16 @@ private fun SplitPanelColumn(
 ) {
     Column(
         modifier = modifier
-            .background(PosCardDark, RoundedCornerShape(12.dp))
-            .border(1.5.dp, borderColor, RoundedCornerShape(12.dp))
-            .clip(RoundedCornerShape(12.dp))
+            .background(PosCardDark, RoundedCornerShape(10.dp))
+            .border(1.2.dp, borderColor, RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(10.dp))
     ) {
         // Column Header with Gradient and Item Count Badge
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Brush.horizontalGradient(headerGradient))
-                .padding(horizontal = 8.dp, vertical = 6.dp)
+                .padding(horizontal = 8.dp, vertical = 5.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -157,8 +155,8 @@ private fun SplitPanelColumn(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                        .background(Color.Black.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 5.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = "$count صنف",
@@ -175,7 +173,7 @@ private fun SplitPanelColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF030712))
-                .padding(horizontal = 6.dp, vertical = 4.dp),
+                .padding(horizontal = 6.dp, vertical = 3.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -184,7 +182,7 @@ private fun SplitPanelColumn(
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.width(32.dp)
+                modifier = Modifier.width(30.dp)
             )
 
             Spacer(modifier = Modifier.width(4.dp))
@@ -213,19 +211,14 @@ private fun SplitPanelColumn(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(12.dp)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "لا توجد نواقص",
                         color = PosTextMuted,
-                        fontSize = 12.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "أضف صوتياً أو يدوياً",
-                        color = Color(0xFF475569),
-                        fontSize = 10.sp
                     )
                 }
             }
@@ -233,8 +226,8 @@ private fun SplitPanelColumn(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 4.dp, vertical = 2.dp),
-                verticalArrangement = Arrangement.spacedBy(3.dp)
+                    .padding(horizontal = 3.dp, vertical = 2.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
                     val isEven = index % 2 == 0
@@ -245,7 +238,7 @@ private fun SplitPanelColumn(
                             .background(if (isEven) Color(0xFF0B132B).copy(alpha = 0.6f) else Color(0xFF0F172A))
                             .border(0.5.dp, Color(0xFF1E293B), RoundedCornerShape(6.dp))
                             .clickable { onItemClick(item) }
-                            .padding(horizontal = 4.dp, vertical = 5.dp)
+                            .padding(horizontal = 3.dp, vertical = 4.dp)
                             .testTag("item_row_${item.id}"),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -253,10 +246,10 @@ private fun SplitPanelColumn(
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .width(32.dp)
+                                .width(30.dp)
                                 .background(qtyColor.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
                                 .border(0.5.dp, qtyColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                                .padding(vertical = 2.dp)
+                                .padding(vertical = 1.dp)
                         ) {
                             Text(
                                 text = "${item.qty}",
@@ -296,10 +289,10 @@ private fun SplitPanelColumn(
                                     .testTag("move_item_${item.id}")
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.SwapHoriz,
+                                    painter = painterResource(id = R.drawable.ic_swap_horiz),
                                     contentDescription = "نقل للشق الآخر",
                                     tint = PosTextSecondary,
-                                    modifier = Modifier.size(14.dp)
+                                    modifier = Modifier.size(13.dp)
                                 )
                             }
 

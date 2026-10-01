@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,9 +17,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -31,14 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.local.GroceryPageEntity
 import com.example.ui.theme.PosAmber
 import com.example.ui.theme.PosCardBorder
 import com.example.ui.theme.PosCardDark
-import com.example.ui.theme.PosTextMuted
 import com.example.ui.theme.PosTextPrimary
 import com.example.ui.theme.PosTextSecondary
 import com.example.ui.theme.SplitRightBlue
@@ -61,7 +58,7 @@ fun PageSwitcherBar(
             .fillMaxWidth()
             .background(PosCardDark, RoundedCornerShape(10.dp))
             .border(1.dp, PosCardBorder, RoundedCornerShape(10.dp))
-            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 5.dp)
             .testTag("page_switcher_bar")
     ) {
         Row(
@@ -75,25 +72,25 @@ fun PageSwitcherBar(
                     .weight(1f)
                     .horizontalScroll(rememberScrollState()),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 pages.forEach { page ->
                     val isSelected = page.id == currentPageId
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(6.dp))
                             .background(
                                 if (isSelected) SplitRightBlue else Color(0xFF1E293B)
                             )
                             .border(
                                 1.dp,
                                 if (isSelected) Color(0xFF60A5FA) else Color(0xFF334155),
-                                RoundedCornerShape(8.dp)
+                                RoundedCornerShape(6.dp)
                             )
                             .clickable {
                                 if (isSelected) onOpenRenamePageDialog() else onSelectPage(page.id)
                             }
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .padding(horizontal = 9.dp, vertical = 5.dp)
                             .testTag("page_tab_${page.id}")
                     ) {
                         Text(
@@ -109,7 +106,7 @@ fun PageSwitcherBar(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(30.dp)
+                        .size(28.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF1E293B))
                         .clickable { onOpenNewPageDialog() }
@@ -119,7 +116,7 @@ fun PageSwitcherBar(
                         imageVector = Icons.Default.Add,
                         contentDescription = "صفحة جديدة",
                         tint = PosAmber,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
@@ -130,13 +127,13 @@ fun PageSwitcherBar(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .background(Color(0xFF030712), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                    .background(Color(0xFF030712), RoundedCornerShape(6.dp))
+                    .padding(horizontal = 3.dp, vertical = 2.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(22.dp)
                         .clip(RoundedCornerShape(4.dp))
                         .clickable { onDecreaseFontSize() }
                 ) {
@@ -159,7 +156,7 @@ fun PageSwitcherBar(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(22.dp)
                         .clip(RoundedCornerShape(4.dp))
                         .clickable { onIncreaseFontSize() }
                 ) {
@@ -182,13 +179,13 @@ fun PageSwitcherBar(
                     contentColor = Color(0xFF93C5FD)
                 ),
                 modifier = Modifier
-                    .size(30.dp)
+                    .size(28.dp)
                     .testTag("quick_copy_list_btn")
             ) {
                 Icon(
-                    imageVector = Icons.Default.ContentCopy,
+                    painter = painterResource(id = R.drawable.ic_content_copy),
                     contentDescription = "نسخ القائمة",
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(15.dp)
                 )
             }
         }

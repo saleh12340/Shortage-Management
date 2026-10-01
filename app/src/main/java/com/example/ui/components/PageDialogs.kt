@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -28,12 +27,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.ui.theme.PosAmber
 import com.example.ui.theme.PosCardBorder
 import com.example.ui.theme.PosCardDark
@@ -54,12 +54,12 @@ fun NewPageDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = PosCardDark,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(14.dp),
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = PosAmber)
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("إضافة صفحة جديدة", color = PosTextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("إضافة صفحة جديدة", color = PosTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
         },
         text = {
@@ -67,7 +67,7 @@ fun NewPageDialog(
                 Text(
                     text = "أدخل اسم الصفحة (مثلاً: طلبيات الغد، نواقص المنظفات...):",
                     color = PosTextSecondary,
-                    fontSize = 13.sp
+                    fontSize = 12.sp
                 )
                 OutlinedTextField(
                     value = pageName,
@@ -114,17 +114,17 @@ fun RenamePageDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = PosCardDark,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(14.dp),
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = Icons.Default.Edit, contentDescription = null, tint = PosAmber)
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("إدارة الصفحة", color = PosTextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("إدارة الصفحة", color = PosTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(text = "تعديل اسم الصفحة الحالية:", color = PosTextSecondary, fontSize = 13.sp)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(text = "تعديل اسم الصفحة الحالية:", color = PosTextSecondary, fontSize = 12.sp)
                 OutlinedTextField(
                     value = newName,
                     onValueChange = { newName = it },
@@ -152,8 +152,8 @@ fun RenamePageDialog(
                     onClick = { onDelete(); onDismiss() },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = PosRedActive)
                 ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(15.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text("حذف")
                 }
                 OutlinedButton(onClick = onDismiss) {
@@ -173,20 +173,25 @@ fun ClearConfirmDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = PosCardDark,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(14.dp),
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Default.DeleteSweep, contentDescription = null, tint = PosRedActive)
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_delete_sweep),
+                    contentDescription = null,
+                    tint = PosRedActive,
+                    modifier = Modifier.size(20.dp)
+                )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("تأكيد مسح الصفحة", color = PosTextPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                Text("تأكيد مسح الصفحة", color = PosTextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
             }
         },
         text = {
             Text(
-                text = "هل أنت متأكد من مسح جميع أصناف الشقين في \"$pageName\"؟ لا يمكن التراجع عن هذا الإجراء.",
+                text = "هل أنت متأكد من مسح جميع أصناف الشقين في \"$pageName\"؟",
                 color = PosTextSecondary,
-                fontSize = 13.sp,
-                lineHeight = 18.sp
+                fontSize = 12.sp,
+                lineHeight = 16.sp
             )
         },
         confirmButton = {

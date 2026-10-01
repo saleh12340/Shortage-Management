@@ -360,6 +360,10 @@ class GroceryViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun submitRecognizedText(text: String, target: SpeechTargetField = _uiState.value.listeningTarget) {
+        speechManager.submitRecognizedText(text, target)
+    }
+
     fun startListening(target: SpeechTargetField = SpeechTargetField.MASTER) {
         speechManager.startListening(target)
     }

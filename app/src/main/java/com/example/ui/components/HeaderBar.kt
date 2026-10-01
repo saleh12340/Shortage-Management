@@ -14,17 +14,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeleteSweep
-import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -36,9 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.ui.theme.PosAmber
 import com.example.ui.theme.PosCardBorder
 import com.example.ui.theme.PosCardDark
@@ -58,7 +54,6 @@ fun HeaderBar(
     onOpenPrintDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Pulsing animation for the active online status indicator
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 0.85f,
@@ -74,8 +69,8 @@ fun HeaderBar(
         modifier = modifier
             .fillMaxWidth()
             .background(PosCardDark)
-            .border(width = 1.dp, color = PosCardBorder, shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .border(width = 1.dp, color = PosCardBorder, shape = RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
+            .padding(horizontal = 10.dp, vertical = 7.dp)
             .testTag("compact_header_bar")
     ) {
         Row(
@@ -90,17 +85,17 @@ fun HeaderBar(
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(32.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(24.dp)
+                            .size(22.dp)
                             .scale(pulseScale)
                             .background(PosGreenOnline.copy(alpha = 0.25f), CircleShape)
                     )
                     Box(
                         modifier = Modifier
-                            .size(10.dp)
+                            .size(9.dp)
                             .background(PosGreenOnline, CircleShape)
                     )
                 }
@@ -110,16 +105,16 @@ fun HeaderBar(
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Storefront,
+                            painter = painterResource(id = R.drawable.ic_storefront),
                             contentDescription = null,
                             tint = PosAmber,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(17.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = storeTitle,
                             color = PosTextPrimary,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Black
                         )
                     }
@@ -145,13 +140,13 @@ fun HeaderBar(
                         contentColor = Color.White
                     ),
                     modifier = Modifier
-                        .size(38.dp)
+                        .size(36.dp)
                         .testTag("swap_splits_button")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.SwapHoriz,
+                        painter = painterResource(id = R.drawable.ic_swap_horiz),
                         contentDescription = "قلب الشقين",
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(19.dp)
                     )
                 }
 
@@ -163,13 +158,13 @@ fun HeaderBar(
                         contentColor = PosRedActive
                     ),
                     modifier = Modifier
-                        .size(38.dp)
+                        .size(36.dp)
                         .testTag("clear_screen_button")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.DeleteSweep,
+                        painter = painterResource(id = R.drawable.ic_delete_sweep),
                         contentDescription = "مسح الشاشة",
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(19.dp)
                     )
                 }
 
@@ -181,13 +176,13 @@ fun HeaderBar(
                         contentColor = PosAmber
                     ),
                     modifier = Modifier
-                        .size(38.dp)
+                        .size(36.dp)
                         .testTag("print_export_button")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Print,
+                        painter = painterResource(id = R.drawable.ic_print),
                         contentDescription = "الطباعة والإخراج",
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(19.dp)
                     )
                 }
             }

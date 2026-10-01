@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,16 +20,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.PictureAsPdf
-import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -51,12 +48,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.R
 import com.example.data.local.GroceryItemEntity
 import com.example.domain.EscPosGenerator
 import com.example.domain.ExportFormatters
@@ -90,7 +89,7 @@ fun ExportPrintDialog(
         EscPosGenerator.create58mmReceiptBitmap(pageName, rightItems, leftItems)
     }
 
-    var selectedTab by remember { mutableStateOf(0) } // 0: خيارات المخرجات, 1: معاينة إيصال 58mm, 2: معاينة النص
+    var selectedTab by remember { mutableStateOf(0) } // 0: الخيارات, 1: معاينة 58mm, 2: النص
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -98,17 +97,18 @@ fun ExportPrintDialog(
     ) {
         Surface(
             modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .clip(RoundedCornerShape(16.dp))
-                .border(1.5.dp, PosCardBorder, RoundedCornerShape(16.dp)),
+                .fillMaxWidth(0.94f)
+                .wrapContentHeight()
+                .clip(RoundedCornerShape(14.dp))
+                .border(1.2.dp, PosCardBorder, RoundedCornerShape(14.dp)),
             color = PosCardDark
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(14.dp)
+                    .padding(12.dp)
             ) {
-                // Header
+                // Header Bar (Compact)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -116,25 +116,29 @@ fun ExportPrintDialog(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Print,
+                            painter = painterResource(id = R.drawable.ic_print),
                             contentDescription = null,
                             tint = PosAmber,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(20.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "الطباعة وتصدير النواقص",
+                            text = "الطباعة والتصدير",
                             color = PosTextPrimary,
-                            fontSize = 17.sp,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Black
                         )
                     }
 
-                    IconButton(onClick = onDismiss) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(32.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "إغلاق",
-                            tint = PosTextSecondary
+                            tint = PosTextSecondary,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -143,20 +147,21 @@ fun ExportPrintDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        .padding(vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    val tabs = listOf("خيارات التصدير", "معاينة 58mm", "النص الرسمي")
+                    val tabs = listOf("خيارات الإخراج", "معاينة 58mm", "النص الرسمي")
                     tabs.forEachIndexed { index, tabTitle ->
                         val isSelected = selectedTab == index
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(6.dp))
                                 .background(if (isSelected) SplitRightBlue else Color(0xFF1E293B))
-                                .border(1.dp, if (isSelected) Color(0xFF60A5FA) else PosCardBorder, RoundedCornerShape(8.dp))
-                                .padding(vertical = 6.dp)
+                                .border(1.dp, if (isSelected) Color(0xFF60A5FA) else PosCardBorder, RoundedCornerShape(6.dp))
+                                .clickable { selectedTab = index }
+                                .padding(vertical = 5.dp)
                         ) {
                             Text(
                                 text = tabTitle,
@@ -168,11 +173,11 @@ fun ExportPrintDialog(
                     }
                 }
 
-                // Content based on tab
+                // Content Box (Compressed height)
                 Box(
                     modifier = Modifier
-                        .weight(1f, fill = false)
-                        .height(380.dp)
+                        .fillMaxWidth()
+                        .height(310.dp)
                 ) {
                     when (selectedTab) {
                         0 -> {
@@ -181,70 +186,69 @@ fun ExportPrintDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 // 1. System Document Print / PDF (A4)
-                                ExportActionCard(
-                                    title = "طباعة المستند القياسي وتصدير PDF (A4)",
-                                    description = "طباعة كشف الشقين عالي التباين عبر موجه الطباعة أو الحفظ كـ PDF",
-                                    icon = Icons.Default.PictureAsPdf,
+                                CompactActionCard(
+                                    title = "طباعة مستند قياسي وتصدير PDF",
+                                    description = "كشف الشقين عالي التباين للطباعة المباشرة أو حفظ PDF",
+                                    iconRes = R.drawable.ic_picture_as_pdf,
                                     badgeColor = SplitRightBlue,
                                     onClick = {
                                         if (activity != null) {
                                             val html = ExportFormatters.generateHtmlReport(pageName, rightItems, leftItems)
                                             PrintHelper.printDocument(activity, html)
-                                            onShowToast("تم فتح أمر طباعة المستند")
+                                            onShowToast("تم فتح موجه الطباعة القياسي")
                                         } else {
-                                            onShowToast("تعذر الوصول لخدمة الطباعة")
+                                            onShowToast("خدمة الطباعة غير متوفرة")
                                         }
                                     }
                                 )
 
                                 // 2. Thermal 58mm Bluetooth Printing
-                                ExportActionCard(
+                                CompactActionCard(
                                     title = "طباعة إيصال حراري بلوتوث (58mm)",
-                                    description = "توليد أوامر ESC/POS المباشرة بتقنية Raster عالي التباين للغة العربية",
-                                    icon = Icons.Default.Bluetooth,
+                                    description = "إيصال مضغوط عالي التباين بدون عناوين زائدة موفر للورق",
+                                    iconRes = R.drawable.ic_bluetooth,
                                     badgeColor = PosAmber,
                                     onClick = {
                                         val bytes = EscPosGenerator.bitmapToEscPosBytes(receiptBitmap)
-                                        // Copy ESC/POS preview / info
-                                        onShowToast("تم توليد أمر ESC/POS (حجم البيانات: ${bytes.size} بايت)")
+                                        onShowToast("تم تجهيز أمر ESC/POS المضغوط (${bytes.size} بايت)")
                                         selectedTab = 1
                                     }
                                 )
 
                                 // 3. Share as High-Res Image (WhatsApp / Apps)
-                                ExportActionCard(
-                                    title = "مشاركة كشف النواقص كـ صورة عالية الدقة",
-                                    description = "توليد صورة فخمة لكشف الشقين مع الترويسة ومشاركتها عبر الواتساب",
-                                    icon = Icons.Default.Image,
+                                CompactActionCard(
+                                    title = "مشاركة كشف النواقص كـ صورة",
+                                    description = "صورة أنيقة لكشف الشقين للمشاركة السريعة عبر الواتساب",
+                                    iconRes = R.drawable.ic_image,
                                     badgeColor = SplitLeftGreen,
                                     onClick = {
                                         PrintHelper.shareDualColumnAsImage(context, pageName, rightItems, leftItems)
-                                        onShowToast("جارِ تجهيز ومشاركة صورة الكشف...")
+                                        onShowToast("جارِ تجهيز ومشاركة الصورة...")
                                     }
                                 )
 
                                 // 4. Copy Mandatory Text with Preamble
-                                ExportActionCard(
+                                CompactActionCard(
                                     title = "نسخ القائمة كـ نص رسمي للحافظة",
-                                    description = "نسخ الترويسة الإلزامية وقائمة الأصناف للمشاركة السريعة",
-                                    icon = Icons.Default.ContentCopy,
+                                    description = "نسخ الترويسة الرسمية وقائمة النواقص بدقة للحافظة",
+                                    iconRes = R.drawable.ic_content_copy,
                                     badgeColor = Color(0xFF8B5CF6),
                                     onClick = {
                                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                         val clip = ClipData.newPlainText("نواقص بقالة العزي", mandatoryText)
                                         clipboard.setPrimaryClip(clip)
-                                        onShowToast("تم نسخ القائمة مع الترويسة الرسمية بنجاح 📋")
+                                        onShowToast("تم نسخ القائمة مع الترويسة بنجاح 📋")
                                     }
                                 )
 
                                 // 5. Direct Text Share (WhatsApp, Messages)
-                                ExportActionCard(
-                                    title = "إرسال نصي مباشر (واتساب / رسائل)",
-                                    description = "فتح قائمة المشاركة لإرسال النص الرسمي مباشرة",
-                                    icon = Icons.Default.Share,
+                                CompactActionCard(
+                                    title = "إرسال نصي مباشر (واتساب / تطبيقات)",
+                                    description = "مشاركة النص المعتمد مع التطبيقات مباشرة",
+                                    iconRes = R.drawable.ic_content_copy,
                                     badgeColor = PosGreenOnline,
                                     onClick = {
                                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -259,7 +263,7 @@ fun ExportPrintDialog(
                         }
 
                         1 -> {
-                            // 58mm Thermal Receipt Preview
+                            // Ultra-compact 58mm Thermal Receipt Preview
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -267,22 +271,24 @@ fun ExportPrintDialog(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "معاينة إيصال 58 ملم عالي التباين (Raster ESC/POS)",
-                                    color = PosTextSecondary,
+                                    text = "معاينة إيصال 58 ملم (مضغوط وعالي التباين)",
+                                    color = PosTextMuted,
                                     fontSize = 11.sp,
                                     modifier = Modifier.padding(bottom = 6.dp)
                                 )
 
                                 Box(
                                     modifier = Modifier
-                                        .background(Color.White, RoundedCornerShape(4.dp))
-                                        .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
-                                        .padding(8.dp)
+                                        .width(220.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Color.White)
+                                        .border(1.dp, Color(0xFFD1D5DB), RoundedCornerShape(4.dp))
+                                        .padding(6.dp)
                                 ) {
                                     Image(
                                         bitmap = receiptBitmap.asImageBitmap(),
-                                        contentDescription = "معاينة الإيصال الحراري",
-                                        modifier = Modifier.width(280.dp)
+                                        contentDescription = "معاينة الإيصال الحراري المضغوط",
+                                        modifier = Modifier.fillMaxWidth()
                                     )
                                 }
                             }
@@ -298,16 +304,16 @@ fun ExportPrintDialog(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(Color(0xFF030712), RoundedCornerShape(8.dp))
-                                        .border(1.dp, PosCardBorder, RoundedCornerShape(8.dp))
-                                        .padding(10.dp)
+                                        .background(Color(0xFF030712), RoundedCornerShape(6.dp))
+                                        .border(1.dp, PosCardBorder, RoundedCornerShape(6.dp))
+                                        .padding(8.dp)
                                 ) {
                                     Text(
                                         text = mandatoryText,
                                         color = PosTextPrimary,
-                                        fontSize = 12.sp,
+                                        fontSize = 11.sp,
                                         fontFamily = FontFamily.Monospace,
-                                        lineHeight = 18.sp
+                                        lineHeight = 16.sp
                                     )
                                 }
                             }
@@ -315,7 +321,7 @@ fun ExportPrintDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Footer Quick Actions
                 Row(
@@ -332,16 +338,16 @@ fun ExportPrintDialog(
                         colors = ButtonDefaults.buttonColors(containerColor = SplitRightBlue),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(imageVector = Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(painter = painterResource(id = R.drawable.ic_content_copy), contentDescription = null, modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("نسخ النص", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("نسخ النص", fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
 
                     FilledTonalButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("إغلاق", color = PosTextSecondary, fontSize = 12.sp)
+                        Text("إغلاق", color = PosTextSecondary, fontSize = 11.sp)
                     }
                 }
             }
@@ -350,10 +356,10 @@ fun ExportPrintDialog(
 }
 
 @Composable
-private fun ExportActionCard(
+private fun CompactActionCard(
     title: String,
     description: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconRes: Int,
     badgeColor: Color,
     onClick: () -> Unit
 ) {
@@ -363,47 +369,47 @@ private fun ExportActionCard(
             containerColor = Color(0xFF0B132B),
             contentColor = PosTextPrimary
         ),
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, PosCardBorder, RoundedCornerShape(10.dp))
+            .border(1.dp, PosCardBorder, RoundedCornerShape(8.dp))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(34.dp)
+                    .clip(RoundedCornerShape(6.dp))
                     .background(badgeColor.copy(alpha = 0.2f))
-                    .border(1.dp, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                    .border(1.dp, badgeColor.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
             ) {
                 Icon(
-                    imageVector = icon,
+                    painter = painterResource(id = iconRes),
                     contentDescription = null,
                     tint = badgeColor,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
                     color = PosTextPrimary,
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = description,
                     color = PosTextSecondary,
-                    fontSize = 11.sp,
-                    lineHeight = 15.sp
+                    fontSize = 10.sp,
+                    lineHeight = 13.sp
                 )
             }
         }
