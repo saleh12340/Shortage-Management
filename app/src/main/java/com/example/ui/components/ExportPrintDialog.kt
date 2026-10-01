@@ -188,17 +188,16 @@ fun ExportPrintDialog(
                                     .verticalScroll(rememberScrollState()),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                // 1. System Document Print / PDF (A4)
+                                // 1. System Thermal Print (58mm Roll)
                                 CompactActionCard(
-                                    title = "طباعة مستند قياسي وتصدير PDF",
-                                    description = "كشف الشقين عالي التباين للطباعة المباشرة أو حفظ PDF",
-                                    iconRes = R.drawable.ic_picture_as_pdf,
+                                    title = "طباعة الإيصال الحراري 58mm (طابعة النظام والبلوتوث)",
+                                    description = "إرسال الإيصال المضغوط مباشرة إلى خادم الطباعة بمقاس رول 58mm",
+                                    iconRes = R.drawable.ic_print,
                                     badgeColor = SplitRightBlue,
                                     onClick = {
                                         if (activity != null) {
-                                            val html = ExportFormatters.generateHtmlReport(pageName, rightItems, leftItems)
-                                            PrintHelper.printDocument(activity, html)
-                                            onShowToast("تم فتح موجه الطباعة القياسي")
+                                            PrintHelper.printThermalReceipt(activity, receiptBitmap, pageName)
+                                            onShowToast("تم فتح موجه طباعة الإيصال الحراري 58mm")
                                         } else {
                                             onShowToast("خدمة الطباعة غير متوفرة")
                                         }

@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.domain.EscPosGenerator
 import com.example.domain.ExportFormatters
 import com.example.domain.PrintHelper
 import com.example.domain.SpeechTargetField
@@ -178,13 +179,13 @@ fun GroceryAppMainScreen(
                     onDirectPrint = {
                         val act = context as? Activity
                         if (act != null) {
-                            val html = ExportFormatters.generateHtmlReport(
+                            val bitmap = EscPosGenerator.create58mmReceiptBitmap(
                                 uiState.currentPageName,
                                 uiState.rightItems,
                                 uiState.leftItems
                             )
-                            PrintHelper.printDocument(act, html)
-                            viewModel.showToast("تم فتح خادم طباعة أندرويد (طابعة النظام / البلوتوث)")
+                            PrintHelper.printThermalReceipt(act, bitmap, uiState.currentPageName)
+                            viewModel.showToast("تم فتح خادم طباعة الإيصال الحراري 58mm")
                         }
                     },
                     onShareImage = {

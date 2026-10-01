@@ -10,11 +10,15 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.net.Uri
+import android.os.Bundle
+import android.os.CancellationSignal
+import android.os.ParcelFileDescriptor
+import android.print.PageRange
 import android.print.PrintAttributes
+import android.print.PrintDocumentAdapter
+import android.print.PrintDocumentInfo
 import android.print.PrintManager
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.print.pdf.PrintedPdfDocument
 import androidx.core.content.FileProvider
 import com.example.data.local.GroceryItemEntity
 import java.io.File
@@ -26,33 +30,109 @@ import java.util.Locale
 object PrintHelper {
 
     /**
-     * Prints or exports to PDF using Android PrintManager and a hidden WebView.
+     * Prints the ultra-compact 58mm thermal receipt directly via Android PrintManager.
+     * Configures the print job for 58mm roll paper with zero margins instead of A4.
      */
-    fun printDocument(activity: Activity, htmlContent: String, jobTitle: String = "كشف_نواقص_بقالة_العزي") {
-        activity.runOnUiThread {
-            val webView = WebView(activity)
-            webView.webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean = false
+    fun printThermalReceipt(
+        activity: Activity,
+        receiptBitmap: Bitmap,
+        pageName: String
+    ) {
+        val jobTitle = "إيصال_نواقص_$pageName"
+        val printManager = activity.getSystemService(Context.PRINT_SERVICE) as? PrintManager ?: return
 
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    val printManager = activity.getSystemService(Context.PRINT_SERVICE) as? PrintManager
-                    val printAdapter = webView.createPrintDocumentAdapter(jobTitle)
-                    printManager?.print(
-                        jobTitle,
-                        printAdapter,
-                        PrintAttributes.Builder()
-                            .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
-                            .setColorMode(PrintAttributes.COLOR_MODE_COLOR)
-                            .build()
-                    )
+        // 58mm roll paper size in mils (1 mil = 1/1000 inch):
+        // 58mm = ~2.283 inches = 2283 mils
+        // Height calculated proportionally from the bitmap aspect ratio
+        val widthMils = 2283
+        val heightMils = ((receiptBitmap.height.toFloat() / receiptBitmap.width.toFloat()) * widthMils).toInt().coerceAtLeast(3000)
+
+        val rollMediaSize = PrintAttributes.MediaSize(
+            "ROLL_58MM",
+            "إيصال حراري 58mm",
+            widthMils,
+            heightMils
+        )
+
+        val printAttributes = PrintAttributes.Builder()
+            .setMediaSize(rollMediaSize)
+            .setMinMargins(PrintAttributes.Margins(0, 0, 0, 0))
+            .setColorMode(PrintAttributes.COLOR_MODE_MONOCHROME)
+            .build()
+
+        val adapter = object : PrintDocumentAdapter() {
+            private var pdfDocument: PrintedPdfDocument? = null
+
+            override fun onLayout(
+                oldAttributes: PrintAttributes?,
+                newAttributes: PrintAttributes?,
+                cancellationSignal: CancellationSignal?,
+                callback: LayoutResultCallback?,
+                extras: Bundle?
+            ) {
+                if (cancellationSignal?.isCanceled == true) {
+                    callback?.onLayoutCancelled()
+                    return
+                }
+
+                pdfDocument = PrintedPdfDocument(activity, newAttributes ?: printAttributes)
+
+                val info = PrintDocumentInfo.Builder(jobTitle)
+                    .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
+                    .setPageCount(1)
+                    .build()
+
+                callback?.onLayoutFinished(info, true)
+            }
+
+            override fun onWrite(
+                pages: Array<out PageRange>?,
+                destination: ParcelFileDescriptor?,
+                cancellationSignal: CancellationSignal?,
+                callback: WriteResultCallback?
+            ) {
+                if (cancellationSignal?.isCanceled == true) {
+                    callback?.onWriteCancelled()
+                    return
+                }
+
+                val doc = pdfDocument ?: return
+                val page = doc.startPage(0)
+
+                val canvas = page.canvas
+                val pageWidth = page.info.pageWidth.toFloat()
+                // Fit bitmap tightly to page width with 0 wasted margin
+                val scale = pageWidth / receiptBitmap.width.toFloat()
+                val targetHeight = receiptBitmap.height.toFloat() * scale
+
+                val destRect = RectF(0f, 0f, pageWidth, targetHeight)
+                val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
+                canvas.drawBitmap(receiptBitmap, null, destRect, paint)
+
+                doc.finishPage(page)
+
+                try {
+                    destination?.let { pfd ->
+                        FileOutputStream(pfd.fileDescriptor).use { out ->
+                            doc.writeTo(out)
+                        }
+                    }
+                    callback?.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
+                } catch (e: Exception) {
+                    callback?.onWriteFailed(e.message)
+                } finally {
+                    doc.close()
+                    pdfDocument = null
                 }
             }
-            webView.loadDataWithBaseURL(null, htmlContent, "text/html; charset=utf-8", "UTF-8", null)
         }
+
+        printManager.print(jobTitle, adapter, printAttributes)
     }
 
     /**
-     * Generates a high-resolution branded summary image (PNG) and returns Uri or shares directly.
+     * Generates a compact, high-density summary image optimized for WhatsApp and thermal printing.
+     * Uses tight row padding and minimal header height to prevent large A4-like blank spaces.
      */
     fun shareDualColumnAsImage(
         context: Context,
@@ -60,61 +140,51 @@ object PrintHelper {
         rightItems: List<GroceryItemEntity>,
         leftItems: List<GroceryItemEntity>
     ) {
-        val width = 1080
+        val width = 640 // High-density compact mobile width
         val maxRows = maxOf(rightItems.size, leftItems.size, 1)
-        val rowHeight = 56
-        val headerHeight = 360
-        val height = headerHeight + (maxRows * rowHeight) + 160
+        val rowHeight = 30
+        val headerHeight = 90
+        val height = headerHeight + (maxRows * rowHeight) + 40
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
         // Dark POS background
-        canvas.drawColor(android.graphics.Color.rgb(3, 7, 18)) // #030712
+        canvas.drawColor(Color.rgb(11, 19, 43)) // Dark navy slate
 
         val bgPaint = Paint().apply { isAntiAlias = true }
 
-        // Top Header Banner
-        val headerRect = RectF(24f, 24f, (width - 24).toFloat(), 200f)
-        bgPaint.color = android.graphics.Color.rgb(15, 23, 42) // Slate 900
-        canvas.drawRoundRect(headerRect, 20f, 20f, bgPaint)
+        // Top Header Banner (Ultra Compact)
+        val headerRect = RectF(10f, 10f, (width - 10).toFloat(), 80f)
+        bgPaint.color = Color.rgb(15, 23, 42)
+        canvas.drawRoundRect(headerRect, 10f, 10f, bgPaint)
 
-        // Title
+        // Store and Page Title
         val titlePaint = Paint().apply {
-            color = android.graphics.Color.WHITE
-            textSize = 42f
+            color = Color.WHITE
+            textSize = 20f
             isFakeBoldText = true
             textAlign = Paint.Align.CENTER
             typeface = Typeface.DEFAULT_BOLD
             isAntiAlias = true
         }
-        canvas.drawText("🏪 بقالة العزي للمواد الغذائية", width / 2f, 90f, titlePaint)
+        canvas.drawText("بقالة العزي • $pageName", width / 2f, 42f, titlePaint)
 
-        val subTitlePaint = Paint().apply {
-            color = android.graphics.Color.rgb(245, 158, 11) // Amber #f59e0b
-            textSize = 28f
-            isFakeBoldText = true
-            textAlign = Paint.Align.CENTER
-            typeface = Typeface.DEFAULT_BOLD
-            isAntiAlias = true
-        }
-        canvas.drawText("كشف النواقص والطلبيات المزدوج - $pageName", width / 2f, 136f, subTitlePaint)
-
-        val dateFormat = SimpleDateFormat("yyyy/MM/dd - hh:mm a", Locale("ar"))
+        val dateFormat = SimpleDateFormat("yy/MM/dd HH:mm", Locale.getDefault())
         val datePaint = Paint().apply {
-            color = android.graphics.Color.rgb(148, 163, 184) // Slate 400
-            textSize = 22f
+            color = Color.rgb(245, 158, 11) // Amber
+            textSize = 13f
             textAlign = Paint.Align.CENTER
             typeface = Typeface.DEFAULT
             isAntiAlias = true
         }
-        canvas.drawText("التاريخ: ${dateFormat.format(Date())} | إجمالي الأصناف: ${rightItems.size + leftItems.size}", width / 2f, 175f, datePaint)
+        val totalCount = rightItems.size + leftItems.size
+        canvas.drawText("${dateFormat.format(Date())} • إجمالي: $totalCount صنف", width / 2f, 68f, datePaint)
 
         // Dual Columns
-        val margin = 24f
-        val gap = 20f
-        val availableWidth = width - (margin * 2) - gap
-        val colWidth = availableWidth / 2f
+        val margin = 10f
+        val gap = 8f
+        val colWidth = (width - (margin * 2) - gap) / 2f
 
         val rightColLeft = margin + colWidth + gap
         val rightColRight = width - margin
@@ -122,30 +192,21 @@ object PrintHelper {
         val leftColLeft = margin
         val leftColRight = margin + colWidth
 
-        val tableTop = 230f
-        val tableBottom = (tableTop + 60f + (maxRows * rowHeight)).toFloat()
+        val tableTop = 95f
+        val tableBottom = (tableTop + 35f + (maxRows * rowHeight)).toFloat()
 
-        // Right Column Card (Royal Blue)
-        val rightCardRect = RectF(rightColLeft, tableTop, rightColRight, tableBottom)
-        bgPaint.color = android.graphics.Color.rgb(11, 25, 44) // Deep blue tint
-        canvas.drawRoundRect(rightCardRect, 16f, 16f, bgPaint)
+        // Right Column Background
+        bgPaint.color = Color.rgb(15, 29, 61)
+        canvas.drawRoundRect(RectF(rightColLeft, tableTop, rightColRight, tableBottom), 8f, 8f, bgPaint)
 
-        val rightHeaderRect = RectF(rightColLeft, tableTop, rightColRight, tableTop + 55f)
-        bgPaint.color = android.graphics.Color.rgb(37, 99, 235) // Royal blue
-        canvas.drawRoundRect(rightHeaderRect, 16f, 16f, bgPaint)
+        // Left Column Background
+        bgPaint.color = Color.rgb(6, 40, 30)
+        canvas.drawRoundRect(RectF(leftColLeft, tableTop, leftColRight, tableBottom), 8f, 8f, bgPaint)
 
-        // Left Column Card (Emerald Green)
-        val leftCardRect = RectF(leftColLeft, tableTop, leftColRight, tableBottom)
-        bgPaint.color = android.graphics.Color.rgb(6, 35, 25) // Deep emerald tint
-        canvas.drawRoundRect(leftCardRect, 16f, 16f, bgPaint)
-
-        val leftHeaderRect = RectF(leftColLeft, tableTop, leftColRight, tableTop + 55f)
-        bgPaint.color = android.graphics.Color.rgb(5, 150, 105) // Emerald
-        canvas.drawRoundRect(leftHeaderRect, 16f, 16f, bgPaint)
-
+        // Column Titles
         val colTitlePaint = Paint().apply {
-            color = android.graphics.Color.WHITE
-            textSize = 26f
+            color = Color.WHITE
+            textSize = 14f
             isFakeBoldText = true
             textAlign = Paint.Align.RIGHT
             typeface = Typeface.DEFAULT_BOLD
@@ -153,31 +214,36 @@ object PrintHelper {
         }
 
         val badgePaint = Paint().apply {
-            color = android.graphics.Color.WHITE
-            textSize = 22f
+            color = Color.WHITE
+            textSize = 13f
             textAlign = Paint.Align.LEFT
-            typeface = Typeface.DEFAULT
+            typeface = Typeface.DEFAULT_BOLD
             isAntiAlias = true
         }
 
-        canvas.drawText("🔷 الشق الأيمن", rightColRight - 20f, tableTop + 38f, colTitlePaint)
-        canvas.drawText("(${rightItems.size})", rightColLeft + 20f, tableTop + 38f, badgePaint)
+        // Right header
+        bgPaint.color = Color.rgb(37, 99, 235)
+        canvas.drawRoundRect(RectF(rightColLeft, tableTop, rightColRight, tableTop + 30f), 8f, 8f, bgPaint)
+        canvas.drawText("🔷 الشق الأيمن", rightColRight - 10f, tableTop + 21f, colTitlePaint)
+        canvas.drawText("${rightItems.size}", rightColLeft + 10f, tableTop + 21f, badgePaint)
 
-        canvas.drawText("🟢 الشق الأيسر", leftColRight - 20f, tableTop + 38f, colTitlePaint)
-        canvas.drawText("(${leftItems.size})", leftColLeft + 20f, tableTop + 38f, badgePaint)
+        // Left header
+        bgPaint.color = Color.rgb(5, 150, 105)
+        canvas.drawRoundRect(RectF(leftColLeft, tableTop, leftColRight, tableTop + 30f), 8f, 8f, bgPaint)
+        canvas.drawText("🟢 الشق الأيسر", leftColRight - 10f, tableTop + 21f, colTitlePaint)
+        canvas.drawText("${leftItems.size}", leftColLeft + 10f, tableTop + 21f, badgePaint)
 
-        // Draw items
         val itemTextPaint = Paint().apply {
-            color = android.graphics.Color.rgb(241, 245, 249)
-            textSize = 22f
+            color = Color.rgb(241, 245, 249)
+            textSize = 13f
             textAlign = Paint.Align.RIGHT
-            typeface = Typeface.DEFAULT
+            typeface = Typeface.DEFAULT_BOLD
             isAntiAlias = true
         }
 
         val rightQtyPaint = Paint().apply {
-            color = android.graphics.Color.rgb(245, 158, 11) // Amber
-            textSize = 24f
+            color = Color.rgb(245, 158, 11) // Amber
+            textSize = 14f
             isFakeBoldText = true
             textAlign = Paint.Align.CENTER
             typeface = Typeface.DEFAULT_BOLD
@@ -185,8 +251,8 @@ object PrintHelper {
         }
 
         val leftQtyPaint = Paint().apply {
-            color = android.graphics.Color.rgb(52, 211, 153) // Light emerald
-            textSize = 24f
+            color = Color.rgb(52, 211, 153) // Green
+            textSize = 14f
             isFakeBoldText = true
             textAlign = Paint.Align.CENTER
             typeface = Typeface.DEFAULT_BOLD
@@ -194,26 +260,28 @@ object PrintHelper {
         }
 
         val dividerPaint = Paint().apply {
-            color = android.graphics.Color.rgb(30, 41, 59)
-            strokeWidth = 1.5f
+            color = Color.rgb(30, 41, 59)
+            strokeWidth = 1f
         }
 
-        var rowY = tableTop + 95f
+        var rowY = tableTop + 50f
         for (i in 0 until maxRows) {
             val rItem = rightItems.getOrNull(i)
             val lItem = leftItems.getOrNull(i)
 
             if (rItem != null) {
-                canvas.drawText(rItem.name, rightColRight - 20f, rowY, itemTextPaint)
-                canvas.drawText("${rItem.qty}", rightColLeft + 45f, rowY, rightQtyPaint)
+                val name = if (rItem.name.length > 18) rItem.name.take(17) + "…" else rItem.name
+                canvas.drawText(name, rightColRight - 10f, rowY, itemTextPaint)
+                canvas.drawText("${rItem.qty}", rightColLeft + 25f, rowY, rightQtyPaint)
             }
             if (lItem != null) {
-                canvas.drawText(lItem.name, leftColRight - 20f, rowY, itemTextPaint)
-                canvas.drawText("${lItem.qty}", leftColLeft + 45f, rowY, leftQtyPaint)
+                val name = if (lItem.name.length > 18) lItem.name.take(17) + "…" else lItem.name
+                canvas.drawText(name, leftColRight - 10f, rowY, itemTextPaint)
+                canvas.drawText("${lItem.qty}", leftColLeft + 25f, rowY, leftQtyPaint)
             }
 
-            canvas.drawLine(rightColLeft + 15f, rowY + 16f, rightColRight - 15f, rowY + 16f, dividerPaint)
-            canvas.drawLine(leftColLeft + 15f, rowY + 16f, leftColRight - 15f, rowY + 16f, dividerPaint)
+            canvas.drawLine(rightColLeft + 8f, rowY + 9f, rightColRight - 8f, rowY + 9f, dividerPaint)
+            canvas.drawLine(leftColLeft + 8f, rowY + 9f, leftColRight - 8f, rowY + 9f, dividerPaint)
             rowY += rowHeight
         }
 
