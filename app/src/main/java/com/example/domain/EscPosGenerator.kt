@@ -155,6 +155,41 @@ object EscPosGenerator {
         return bitmap
     }
 
+    /** 384-dot ESC/POS bitmap: compact, monochrome, no emoji, no arbitrary text clipping. */
+    fun create58mmReceiptBitmap(pageName: String, rightItems: List<GroceryItemEntity>, leftItems: List<GroceryItemEntity>): Bitmap {
+        val width = 384; val rowHeight = 21; val top = 48
+        val maxItems = maxOf(rightItems.size, leftItems.size, 1)
+        val height = top + (maxItems * rowHeight) + 14
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+        val canvas = Canvas(bitmap); canvas.drawColor(Color.WHITE)
+        fun paint(size: Float, bold: Boolean, align: Paint.Align) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK; textSize = size; textAlign = align; typeface = if (bold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+        }
+        val title=paint(16f,true,Paint.Align.CENTER); val meta=paint(10f,false,Paint.Align.CENTER)
+        val header=paint(11f,true,Paint.Align.RIGHT); val qty=paint(11f,true,Paint.Align.CENTER); val name=paint(10.5f,true,Paint.Align.RIGHT)
+        val line=Paint().apply { color=Color.BLACK; strokeWidth=1f }; val thin=Paint().apply { color=Color.LTGRAY; strokeWidth=.6f }
+        var y=15f
+        canvas.drawText("بقالة العزي - " + pageName, width/2f, y, title); y+=13f
+        val date=SimpleDateFormat("yy/MM/dd HH:mm",Locale.getDefault()).format(Date())
+        canvas.drawText(date + "  |  " + (rightItems.size+leftItems.size) + " صنف", width/2f, y, meta); y+=6f
+        canvas.drawLine(6f,y,width-6f,y,line); y+=13f
+        val mid=width/2f
+        canvas.drawText("الشق الأيمن",width-8f,y,header); canvas.drawText("العدد",mid-24f,y,qty)
+        canvas.drawText("الشق الأيسر",mid-8f,y,header); canvas.drawText("العدد",24f,y,qty); y+=4f
+        canvas.drawLine(6f,y,width-6f,y,line); val tableTop=y; y+=14f
+        fun drawItem(item:GroceryItemEntity?, nameRight:Float, qtyX:Float) {
+            if(item==null) return
+            val fittedCount=name.breakText(item.name,true,118f,null).coerceAtLeast(1)
+            val fitted=item.name.take(fittedCount)
+            canvas.drawText(fitted,nameRight,y,name); canvas.drawText(item.qty.toString(),qtyX,y,qty)
+        }
+        for(i in 0 until maxItems) {
+            drawItem(rightItems.getOrNull(i),width-8f,mid-24f); drawItem(leftItems.getOrNull(i),mid-8f,24f)
+            canvas.drawLine(8f,y+5f,width-8f,y+5f,thin); y+=rowHeight
+        }
+        canvas.drawLine(mid,tableTop,mid,y-16f,line); canvas.drawLine(6f,y-16f,width-6f,y-16f,line)
+        return bitmap
+    }
     /**
      * Converts a monochrome Bitmap into standard ESC/POS GS v 0 raster byte commands.
      */
