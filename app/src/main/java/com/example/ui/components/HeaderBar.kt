@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -42,11 +40,8 @@ import com.example.ui.theme.PosCardBorder
 import com.example.ui.theme.PosCardDark
 import com.example.ui.theme.PosGreenOnline
 import com.example.ui.theme.PosRedActive
-import com.example.ui.theme.PosTextMuted
 import com.example.ui.theme.PosTextPrimary
-import com.example.ui.theme.PosTextSecondary
 import com.example.ui.theme.SplitLeftGreen
-import com.example.ui.theme.SplitRightBlue
 
 @Composable
 fun HeaderBar(
@@ -55,10 +50,8 @@ fun HeaderBar(
     totalCount: Int,
     onDirectPrint: () -> Unit,
     onShareImage: () -> Unit,
-    onCopyText: () -> Unit,
     onSwapSplits: () -> Unit,
     onClearScreen: () -> Unit,
-    onOpenReceiptPreview: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
