@@ -130,6 +130,30 @@ object PrintHelper {
         printManager.print(jobTitle, adapter, printAttributes)
     }
 
+    /** Send the 58mm ESC/POS raster directly to a paired Bluetooth thermal printer. */
+    fun printBluetoothReceipt(context: Context, receiptBitmap: Bitmap, pageName: String, onResult: (String) -> Unit) {
+        if (android.os.Build.VERSION.SDK_INT >= 31 && androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_CONNECT) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            onResult("امنح إذن Bluetooth ثم أعد الطباعة"); return
+        }
+        val adapter = (context.getSystemService(Context.BLUETOOTH_SERVICE) as? android.bluetooth.BluetoothManager)?.adapter
+        if (adapter == null || !adapter.isEnabled) { onResult("فعّل Bluetooth أولاً"); return }
+        val devices = try { adapter.bondedDevices?.toList().orEmpty() } catch (_: SecurityException) { emptyList() }
+        if (devices.isEmpty()) { onResult("لا توجد طابعة Bluetooth مقترنة بالجهاز"); return }
+        val names = devices.map { (it.name ?: "جهاز Bluetooth") + "\n" + it.address }.toTypedArray()
+        android.app.AlertDialog.Builder(context).setTitle("اختر طابعة 58mm").setItems(names) { _, which ->
+            Thread {
+                var socket: android.bluetooth.BluetoothSocket? = null
+                try {
+                    val device = devices[which]
+                    socket = device.createRfcommSocketToServiceRecord(java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+                    adapter.cancelDiscovery(); socket.connect()
+                    socket.outputStream.use { out -> out.write(EscPosGenerator.bitmapToEscPosBytes(receiptBitmap)); out.flush() }
+                    onResult("تمت طباعة الإيصال 58mm ✓")
+                } catch (e: Exception) { onResult("تعذر الطباعة: " + (e.message ?: "تحقق من اقتران الطابعة")) }
+                finally { try { socket?.close() } catch (_: Exception) {} }
+            }.start()
+        }.setNegativeButton("إلغاء", null).show()
+    }
     /**
      * Generates a compact, high-density summary image optimized for WhatsApp and thermal printing.
      * Uses tight row padding and minimal header height to prevent large A4-like blank spaces.
