@@ -74,7 +74,7 @@ android {
     }
   }
 
-  // The app is distributed as an ARM64 APK; limiting packaged locales removes unused resource tables without affecting Arabic/English UI.\n  resourceConfigurations += listOf("ar", "en")\n\n  compileOptions {
+  // Keep only the locales used by the app to reduce the packaged resource table.\n  resourceConfigurations += listOf("ar", "en")\n\n  compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
   }
@@ -127,7 +127,5 @@ dependencies {
   androidTestImplementation(libs.androidx.espresso.core)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.runner)
-  debugImplementation(libs.androidx.compose.ui.test.manifest)
-  debugImplementation(libs.androidx.compose.ui.tooling)
   "ksp"(libs.androidx.room.compiler)
 }
