@@ -99,29 +99,6 @@ fun GroceryAppMainScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // System speech recognition Activity dialog fallback
-    val systemSpeechLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == android.app.Activity.RESULT_OK && result.data != null) {
-            val matches = result.data?.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS)
-            val spoken = matches?.firstOrNull()
-            if (!spoken.isNullOrEmpty()) {
-                viewModel.submitRecognizedText(spoken)
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.speechManager.onFallbackToSystemDialog = { fallbackIntent, _ ->
-            try {
-                systemSpeechLauncher.launch(fallbackIntent)
-            } catch (e: Exception) {
-                viewModel.showToast("لا يتوفر تطبيق للتعرف الصوتي على هذا الجهاز")
-            }
-        }
-    }
-
     // Permission launcher for Audio Recording
     val audioPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
