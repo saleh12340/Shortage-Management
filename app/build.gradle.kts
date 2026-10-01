@@ -40,7 +40,6 @@ android {
 
   buildTypes {
     release {
-      // R8 removes unreachable bytecode and optimizes the final release APK.
       isMinifyEnabled = true
       isShrinkResources = true
       isCrunchPngs = true
@@ -51,17 +50,26 @@ android {
       signingConfig = signingConfigs.getByName("release")
     }
     debug {
+      // Keep the CI debug APK installable while applying the same R8/resource
+      // shrinking used for release, so the distributed debug artifact stays small.
+      isMinifyEnabled = true
+      isShrinkResources = true
+      isCrunchPngs = true
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro"
+      )
       signingConfig = signingConfigs.getByName("debugConfig")
     }
   }
 
-  // Generate only the native ABI needed by the device instead of packaging
-  // unnecessary native variants into the release APK.
   splits {
     abi {
       isEnable = true
       reset()
       include("arm64-v8a", "armeabi-v7a")
+      // CI distributes one installable APK; keep universal enabled for
+      // compatibility with devices using either supported ARM ABI.
       isUniversalApk = true
     }
   }
