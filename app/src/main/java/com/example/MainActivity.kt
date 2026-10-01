@@ -133,6 +133,24 @@ fun GroceryAppMainScreen(
         }
     }
 
+    val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        if (grants.values.all { it }) {
+            val bitmap = EscPosGenerator.create58mmReceiptBitmap(uiState.currentPageName, uiState.rightItems, uiState.leftItems)
+            PrintHelper.printBluetoothReceipt(context, bitmap, uiState.currentPageName) { message -> viewModel.showToast(message) }
+        } else viewModel.showToast("يلزم السماح بصلاحية Bluetooth للطباعة")
+    }
+
+    fun printBluetooth() {
+        val permissions = if (Build.VERSION.SDK_INT >= 31) arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN) else emptyArray()
+        if (permissions.isNotEmpty() && permissions.any { ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED })
+            bluetoothPermissionLauncher.launch(permissions)
+        else {
+            val bitmap = EscPosGenerator.create58mmReceiptBitmap(uiState.currentPageName, uiState.rightItems, uiState.leftItems)
+            PrintHelper.printBluetoothReceipt(context, bitmap, uiState.currentPageName) { message -> viewModel.showToast(message) }
+        }
+    }
     // Function to check permission before speech recognition
     fun requestAndStartListening(target: SpeechTargetField) {
         val hasPermission = ContextCompat.checkSelfPermission(
@@ -176,18 +194,7 @@ fun GroceryAppMainScreen(
                     storeTitle = "بقالة العزي للمواد الغذائية",
                     pageName = uiState.currentPageName,
                     totalCount = uiState.totalItemsCount,
-                    onDirectPrint = {
-                        val act = context as? Activity
-                        if (act != null) {
-                            val bitmap = EscPosGenerator.create58mmReceiptBitmap(
-                                uiState.currentPageName,
-                                uiState.rightItems,
-                                uiState.leftItems
-                            )
-                            PrintHelper.printThermalReceipt(act, bitmap, uiState.currentPageName)
-                            viewModel.showToast("تم فتح خادم طباعة الإيصال الحراري 58mm")
-                        }
-                    },
+                    onDirectPrint = { printBluetooth() },
                     onShareImage = {
                         PrintHelper.shareDualColumnAsImage(
                             context,
