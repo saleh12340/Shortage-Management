@@ -139,69 +139,17 @@ fun HeaderBar(
             }
         }
 
-        // Bottom Row: Dedicated Action Buttons for Each Function
+        // Essential actions only — keep the header compact and screen-friendly.
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            // 1. Direct System / Bluetooth Print Button (خادم طباعة النظام)
-            HeaderActionButton(
-                label = "طباعة النظام",
-                iconRes = R.drawable.ic_print,
-                badgeColor = PosAmber,
-                onClick = onDirectPrint,
-                testTag = "direct_system_print_btn"
-            )
-
-            // 2. Share Image Button (مشاركة كصورة للواتساب)
-            HeaderActionButton(
-                label = "مشاركة صورة",
-                iconRes = R.drawable.ic_image,
-                badgeColor = SplitLeftGreen,
-                onClick = onShareImage,
-                testTag = "share_image_btn"
-            )
-
-            // 3. Copy Text Button (نسخ القائمة للحافظة)
-            HeaderActionButton(
-                label = "نسخ النص",
-                iconRes = R.drawable.ic_content_copy,
-                badgeColor = SplitRightBlue,
-                onClick = onCopyText,
-                testTag = "copy_text_btn"
-            )
-
-            // 4. Swap Splits Button (قلب الشقين)
-            HeaderActionButton(
-                label = "قلب الشقين",
-                iconRes = R.drawable.ic_swap_horiz,
-                badgeColor = Color(0xFF818CF8),
-                onClick = onSwapSplits,
-                testTag = "swap_splits_btn"
-            )
-
-            // 5. Thermal 58mm Preview Dialog Button (معاينة الإيصال)
-            HeaderActionButton(
-                label = "إيصال 58mm",
-                iconRes = R.drawable.ic_bluetooth,
-                badgeColor = Color(0xFFF97316),
-                onClick = onOpenReceiptPreview,
-                testTag = "preview_receipt_btn"
-            )
-
-            // 6. Clear Screen Button (مسح الكل)
-            HeaderActionButton(
-                label = "مسح",
-                iconRes = R.drawable.ic_delete_sweep,
-                badgeColor = PosRedActive,
-                onClick = onClearScreen,
-                testTag = "clear_screen_btn"
-            )
-        }
-    }
+            HeaderActionButton("طباعة 58mm", R.drawable.ic_bluetooth, PosAmber, onDirectPrint, "direct_bluetooth_print_btn")
+            HeaderActionButton("مشاركة", R.drawable.ic_image, SplitLeftGreen, onShareImage, "share_image_btn")
+            HeaderActionButton("قلب", R.drawable.ic_swap_horiz, Color(0xFF818CF8), onSwapSplits, "swap_splits_btn")
+            HeaderActionButton("مسح", R.drawable.ic_delete_sweep, PosRedActive, onClearScreen, "clear_screen_btn")
+        }    }
 }
 
 @Composable
