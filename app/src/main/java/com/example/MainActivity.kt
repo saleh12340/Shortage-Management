@@ -204,20 +204,8 @@ fun GroceryAppMainScreen(
                         )
                         viewModel.showToast("جارِ تجهيز ومشاركة صورة الكشف للواتساب...")
                     },
-                    onCopyText = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val mandatoryText = ExportFormatters.generateMandatoryPreambleText(
-                            uiState.currentPageName,
-                            uiState.rightItems,
-                            uiState.leftItems
-                        )
-                        val clip = ClipData.newPlainText("نواقص بقالة العزي", mandatoryText)
-                        clipboard.setPrimaryClip(clip)
-                        viewModel.showToast("تم نسخ القائمة مع الترويسة للحافظة 📋")
-                    },
                     onSwapSplits = { viewModel.swapSplits() },
                     onClearScreen = { viewModel.openClearConfirmDialog() },
-                    onOpenReceiptPreview = { viewModel.openExportDialog() }
                 )
 
                 // 2. Smart Voice & Mode Bar
