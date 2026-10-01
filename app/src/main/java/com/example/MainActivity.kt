@@ -194,7 +194,7 @@ fun GroceryAppMainScreen(
                     storeTitle = "بقالة العزي للمواد الغذائية",
                     pageName = uiState.currentPageName,
                     totalCount = uiState.totalItemsCount,
-                    onDirectPrint = { printBluetooth() },
+                    onDirectPrint = { PrintHelper.printThermalReceipt(context as Activity, EscPosGenerator.create58mmReceiptBitmap(uiState.currentPageName, uiState.rightItems, uiState.leftItems), uiState.currentPageName) },
                     onShareImage = {
                         PrintHelper.shareDualColumnAsImage(
                             context,
