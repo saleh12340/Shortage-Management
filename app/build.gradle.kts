@@ -74,7 +74,10 @@ android {
     }
   }
 
-  // Keep only the locales used by the app to reduce the packaged resource table.\n  resourceConfigurations += listOf("ar", "en")\n\n  compileOptions {
+  // Keep only the locales used by the app to reduce the packaged resource table.
+  resourceConfigurations += listOf("ar", "en")
+
+  compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
   }
