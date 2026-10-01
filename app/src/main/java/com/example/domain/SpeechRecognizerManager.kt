@@ -1,7 +1,6 @@
 package com.example.domain
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -39,17 +38,14 @@ class SpeechRecognizerManager(private val context: Context) {
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     var onSpeechResult: ((text: String, target: SpeechTargetField) -> Unit)? = null
-    var onFallbackToSystemDialog: ((intent: Intent, target: SpeechTargetField) -> Unit)? = null
 
     fun isAvailable(): Boolean = SpeechRecognizer.isRecognitionAvailable(context)
 
-    fun createSpeechIntent(): Intent {
-        return Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+    private fun createSpeechIntent(): android.content.Intent {
+        return android.content.Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ar-SA")
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "ar")
-            putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, "ar")
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "تحدث بالصنف والكمية (مثال: خمسة أكياس بر)...")
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         }
@@ -85,8 +81,7 @@ class SpeechRecognizerManager(private val context: Context) {
                         // If error client or busy, reset recognizer so next push works
                         if (error == SpeechRecognizer.ERROR_CLIENT || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY) {
                             cleanupRecognizer()
-                            // Try fallback if available
-                            onFallbackToSystemDialog?.invoke(createSpeechIntent(), _currentTarget.value)
+                            _errorMessage.value = "تعذر بدء التعرف الصوتي، أعد الضغط على الميكروفون"
                             return
                         }
 
@@ -156,10 +151,10 @@ class SpeechRecognizerManager(private val context: Context) {
                 ensureRecognizerCreated()
                 _isListening.value = true
                 speechRecognizer?.startListening(createSpeechIntent())
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _isListening.value = false
                 cleanupRecognizer()
-                onFallbackToSystemDialog?.invoke(createSpeechIntent(), target)
+                _errorMessage.value = "تعذر بدء التسجيل الصوتي، أعد المحاولة"
             }
         }
     }
