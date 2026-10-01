@@ -1,5 +1,6 @@
 package com.example
 
+import android.app.Activity
 import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -53,6 +54,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.domain.ExportFormatters
+import com.example.domain.PrintHelper
 import com.example.domain.SpeechTargetField
 import com.example.ui.GroceryViewModel
 import com.example.ui.components.ClearConfirmDialog
@@ -168,13 +170,46 @@ fun GroceryAppMainScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // 1. Compact Header Bar
+                // 1. Compact Header Bar with Dedicated Action Buttons
                 HeaderBar(
                     storeTitle = "بقالة العزي للمواد الغذائية",
                     pageName = uiState.currentPageName,
                     totalCount = uiState.totalItemsCount,
+                    onDirectPrint = {
+                        val act = context as? Activity
+                        if (act != null) {
+                            val html = ExportFormatters.generateHtmlReport(
+                                uiState.currentPageName,
+                                uiState.rightItems,
+                                uiState.leftItems
+                            )
+                            PrintHelper.printDocument(act, html)
+                            viewModel.showToast("تم فتح خادم طباعة أندرويد (طابعة النظام / البلوتوث)")
+                        }
+                    },
+                    onShareImage = {
+                        PrintHelper.shareDualColumnAsImage(
+                            context,
+                            uiState.currentPageName,
+                            uiState.rightItems,
+                            uiState.leftItems
+                        )
+                        viewModel.showToast("جارِ تجهيز ومشاركة صورة الكشف للواتساب...")
+                    },
+                    onCopyText = {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val mandatoryText = ExportFormatters.generateMandatoryPreambleText(
+                            uiState.currentPageName,
+                            uiState.rightItems,
+                            uiState.leftItems
+                        )
+                        val clip = ClipData.newPlainText("نواقص بقالة العزي", mandatoryText)
+                        clipboard.setPrimaryClip(clip)
+                        viewModel.showToast("تم نسخ القائمة مع الترويسة للحافظة 📋")
+                    },
                     onSwapSplits = { viewModel.swapSplits() },
                     onClearScreen = { viewModel.openClearConfirmDialog() },
-                    onOpenPrintDialog = { viewModel.openExportDialog() }
+                    onOpenReceiptPreview = { viewModel.openExportDialog() }
                 )
 
                 // 2. Smart Voice & Mode Bar

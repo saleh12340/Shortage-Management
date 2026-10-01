@@ -11,7 +11,6 @@ import android.speech.SpeechRecognizer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.Locale
 
 enum class SpeechTargetField {
     MASTER,        // Parses quantity, name, and/or command
@@ -52,16 +51,91 @@ class SpeechRecognizerManager(private val context: Context) {
             putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, "ar")
             putExtra(RecognizerIntent.EXTRA_PROMPT, "تحدث بالصنف والكمية (مثال: خمسة أكياس بر)...")
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         }
     }
 
+    private fun ensureRecognizerCreated() {
+        if (speechRecognizer == null) {
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
+                setRecognitionListener(object : RecognitionListener {
+                    override fun onReadyForSpeech(params: Bundle?) {
+                        _isListening.value = true
+                    }
+
+                    override fun onBeginningOfSpeech() {
+                        _isListening.value = true
+                    }
+
+                    override fun onRmsChanged(rmsdB: Float) {
+                        _audioRms.value = rmsdB.coerceIn(0f, 10f)
+                    }
+
+                    override fun onBufferReceived(buffer: ByteArray?) {}
+
+                    override fun onEndOfSpeech() {
+                        _isListening.value = false
+                        _audioRms.value = 0f
+                    }
+
+                    override fun onError(error: Int) {
+                        _isListening.value = false
+                        _audioRms.value = 0f
+
+                        // If error client or busy, reset recognizer so next push works
+                        if (error == SpeechRecognizer.ERROR_CLIENT || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY) {
+                            cleanupRecognizer()
+                            // Try fallback if available
+                            onFallbackToSystemDialog?.invoke(createSpeechIntent(), _currentTarget.value)
+                            return
+                        }
+
+                        val message = when (error) {
+                            SpeechRecognizer.ERROR_NO_MATCH -> "لم يتم التقاط صوت واضح، أعد المحاولة"
+                            SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT ->
+                                "تعذر الاتصال بالشبكة لمعالجة الصوت"
+                            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "انتهت مهلة التحدث بدون صوت"
+                            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "يرجى تفعيل صلاحية الميكروفون"
+                            else -> null
+                        }
+                        if (message != null) {
+                            _errorMessage.value = message
+                        }
+                    }
+
+                    override fun onResults(results: Bundle?) {
+                        _isListening.value = false
+                        _audioRms.value = 0f
+                        val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        val text = matches?.firstOrNull()?.trim()
+                        if (!text.isNullOrEmpty()) {
+                            _lastRecognizedText.value = text
+                            onSpeechResult?.invoke(text, _currentTarget.value)
+                        }
+                    }
+
+                    override fun onPartialResults(partialResults: Bundle?) {
+                        val partialMatches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        val partial = partialMatches?.firstOrNull()
+                        if (!partial.isNullOrEmpty()) {
+                            _lastRecognizedText.value = partial
+                        }
+                    }
+
+                    override fun onEvent(eventType: Int, params: Bundle?) {}
+                })
+            }
+        }
+    }
+
+    /**
+     * Called when the user presses and holds the mic button.
+     */
     fun startListening(target: SpeechTargetField = SpeechTargetField.MASTER) {
         _currentTarget.value = target
         _errorMessage.value = null
 
-        // Check if device supports in-process SpeechRecognizer
         if (!isAvailable()) {
-            // Trigger fallback to system Speech Recognition Activity dialog!
             val fallbackIntent = createSpeechIntent()
             if (onFallbackToSystemDialog != null) {
                 onFallbackToSystemDialog?.invoke(fallbackIntent, target)
@@ -72,87 +146,42 @@ class SpeechRecognizerManager(private val context: Context) {
             }
         }
 
-        stopListening()
-        _isListening.value = true
-
         mainHandler.post {
             try {
-                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
-                    setRecognitionListener(object : RecognitionListener {
-                        override fun onReadyForSpeech(params: Bundle?) {
-                            _isListening.value = true
-                        }
-
-                        override fun onBeginningOfSpeech() {
-                            _isListening.value = true
-                        }
-
-                        override fun onRmsChanged(rmsdB: Float) {
-                            _audioRms.value = rmsdB.coerceIn(0f, 10f)
-                        }
-
-                        override fun onBufferReceived(buffer: ByteArray?) {}
-
-                        override fun onEndOfSpeech() {
-                            _isListening.value = false
-                            _audioRms.value = 0f
-                        }
-
-                        override fun onError(error: Int) {
-                            _isListening.value = false
-                            _audioRms.value = 0f
-
-                            // If in-process recognizer fails with client or service error, trigger fallback
-                            if (error == SpeechRecognizer.ERROR_CLIENT || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY) {
-                                onFallbackToSystemDialog?.invoke(createSpeechIntent(), target)
-                                return
-                            }
-
-                            val message = when (error) {
-                                SpeechRecognizer.ERROR_NO_MATCH -> "لم يتم التقاط صوت واضح، أعد المحاولة"
-                                SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT ->
-                                    "تعذر الاتصال بالإنترنت لمعالجة الصوت"
-                                SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "انتهت مهلة التحدث بدون صوت"
-                                SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "يرجى تفعيل صلاحية الميكروفون"
-                                else -> null
-                            }
-                            if (message != null) {
-                                _errorMessage.value = message
-                            }
-                        }
-
-                        override fun onResults(results: Bundle?) {
-                            _isListening.value = false
-                            _audioRms.value = 0f
-                            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                            val text = matches?.firstOrNull()?.trim()
-                            if (!text.isNullOrEmpty()) {
-                                _lastRecognizedText.value = text
-                                onSpeechResult?.invoke(text, target)
-                            }
-                        }
-
-                        override fun onPartialResults(partialResults: Bundle?) {
-                            val partialMatches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                            val partial = partialMatches?.firstOrNull()
-                            if (!partial.isNullOrEmpty()) {
-                                _lastRecognizedText.value = partial
-                            }
-                        }
-
-                        override fun onEvent(eventType: Int, params: Bundle?) {}
-                    })
+                // If already listening, stop previous session first
+                if (_isListening.value) {
+                    speechRecognizer?.stopListening()
                 }
 
+                ensureRecognizerCreated()
+                _isListening.value = true
                 speechRecognizer?.startListening(createSpeechIntent())
             } catch (e: Exception) {
                 _isListening.value = false
-                // Attempt fallback to system speech dialog
+                cleanupRecognizer()
                 onFallbackToSystemDialog?.invoke(createSpeechIntent(), target)
             }
         }
     }
 
+    /**
+     * Called when the user releases the mic button in Push-To-Talk mode.
+     * CRITICAL: Must ONLY call stopListening() to finalize speech and deliver onResults.
+     * DO NOT cancel or destroy here!
+     */
+    fun stopListening() {
+        mainHandler.post {
+            try {
+                _isListening.value = false
+                _audioRms.value = 0f
+                speechRecognizer?.stopListening()
+            } catch (_: Exception) {}
+        }
+    }
+
+    /**
+     * Direct submission of recognized text (from fallback dialog or simulated tests).
+     */
     fun submitRecognizedText(text: String, target: SpeechTargetField = _currentTarget.value) {
         val clean = text.trim()
         if (clean.isNotEmpty()) {
@@ -161,15 +190,20 @@ class SpeechRecognizerManager(private val context: Context) {
         }
     }
 
-    fun stopListening() {
-        try {
-            _isListening.value = false
-            _audioRms.value = 0f
-            speechRecognizer?.stopListening()
-            speechRecognizer?.cancel()
-            speechRecognizer?.destroy()
-            speechRecognizer = null
-        } catch (_: Exception) {}
+    /**
+     * Completely cleans up resources when destroying ViewModel or activity.
+     */
+    fun cleanupRecognizer() {
+        mainHandler.post {
+            try {
+                _isListening.value = false
+                _audioRms.value = 0f
+                speechRecognizer?.stopListening()
+                speechRecognizer?.cancel()
+                speechRecognizer?.destroy()
+                speechRecognizer = null
+            } catch (_: Exception) {}
+        }
     }
 
     fun clearError() {

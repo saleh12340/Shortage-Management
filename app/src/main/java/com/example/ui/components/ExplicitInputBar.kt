@@ -3,7 +3,11 @@ package com.example.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -172,14 +176,22 @@ fun ExplicitInputBar(
                         )
                     }
 
-                    // Dedicated Mic for Quantity
+                    // Dedicated Mic for Quantity (Hold to talk)
                     val isListeningQty = isListening && listeningTarget == SpeechTargetField.QUANTITY_ONLY
-                    IconButton(
-                        onClick = {
-                            if (isListeningQty) onStopListening() else onStartListening(SpeechTargetField.QUANTITY_ONLY)
-                        },
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .size(28.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (isListeningQty) PosRedActive.copy(alpha = 0.25f) else Color.Transparent)
+                            .pointerInput(Unit) {
+                                awaitEachGesture {
+                                    awaitFirstDown(requireUnconsumed = false)
+                                    onStartListening(SpeechTargetField.QUANTITY_ONLY)
+                                    waitForUpOrCancellation()
+                                    onStopListening()
+                                }
+                            }
                             .testTag("qty_mic_btn")
                     ) {
                         Icon(
@@ -217,11 +229,21 @@ fun ExplicitInputBar(
                     ),
                     trailingIcon = {
                         val isListeningName = isListening && listeningTarget == SpeechTargetField.NAME_ONLY
-                        IconButton(
-                            onClick = {
-                                if (isListeningName) onStopListening() else onStartListening(SpeechTargetField.NAME_ONLY)
-                            },
-                            modifier = Modifier.testTag("name_mic_btn")
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isListeningName) PosRedActive.copy(alpha = 0.25f) else Color.Transparent)
+                                .pointerInput(Unit) {
+                                    awaitEachGesture {
+                                        awaitFirstDown(requireUnconsumed = false)
+                                        onStartListening(SpeechTargetField.NAME_ONLY)
+                                        waitForUpOrCancellation()
+                                        onStopListening()
+                                    }
+                                }
+                                .testTag("name_mic_btn")
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_mic),
