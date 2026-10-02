@@ -201,7 +201,7 @@ private fun SplitPanelColumn(
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.width(36.dp)
+                modifier = Modifier.width(54.dp)
             )
         }
 
@@ -246,7 +246,7 @@ private fun SplitPanelColumn(
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .width(30.dp)
+                                .width(42.dp)
                                 .background(qtyColor.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
                                 .border(0.5.dp, qtyColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
                                 .padding(vertical = 1.dp)
@@ -268,9 +268,11 @@ private fun SplitPanelColumn(
                             color = PosTextPrimary,
                             fontSize = fontSizeSp.sp,
                             fontWeight = FontWeight.Bold,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
+                            maxLines = 4,
+                            overflow = TextOverflow.Clip,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 1.dp)
                         )
 
                         // Action Buttons: Transfer to other split (Swap) & Delete
@@ -282,8 +284,8 @@ private fun SplitPanelColumn(
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
-                                    .size(20.dp)
-                                    .clip(RoundedCornerShape(4.dp))
+                                    .size(34.dp)
+                                    .clip(RoundedCornerShape(7.dp))
                                     .background(Color(0xFF1E293B))
                                     .clickable { onMoveItem(item) }
                                     .testTag("move_item_${item.id}")
@@ -292,7 +294,7 @@ private fun SplitPanelColumn(
                                     painter = painterResource(id = R.drawable.ic_swap_horiz),
                                     contentDescription = "نقل للشق الآخر",
                                     tint = PosTextSecondary,
-                                    modifier = Modifier.size(13.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
                             }
 
