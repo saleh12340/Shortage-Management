@@ -115,7 +115,7 @@ fun ExplicitInputBar(
                     IconButton(
                         onClick = onDecrementQty,
                         modifier = Modifier
-                            .size(28.dp)
+                            .size(36.dp)
                             .testTag("qty_decrement_btn")
                     ) {
                         Icon(
@@ -150,8 +150,8 @@ fun ExplicitInputBar(
                             cursorColor = PosAmber
                         ),
                         modifier = Modifier
-                            .width(38.dp)
-                            .height(38.dp)
+                            .width(64.dp)
+                            .height(44.dp)
                             .onFocusChanged { focusState ->
                                 if (focusState.isFocused) {
                                     qtyTextFieldValue = qtyTextFieldValue.copy(
@@ -165,7 +165,7 @@ fun ExplicitInputBar(
                     IconButton(
                         onClick = onIncrementQty,
                         modifier = Modifier
-                            .size(28.dp)
+                            .size(36.dp)
                             .testTag("qty_increment_btn")
                     ) {
                         Icon(
@@ -181,8 +181,8 @@ fun ExplicitInputBar(
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(28.dp)
-                            .clip(RoundedCornerShape(6.dp))
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
                             .background(if (isListeningQty) PosRedActive.copy(alpha = 0.25f) else Color.Transparent)
                             .pointerInput(Unit) {
                                 awaitEachGesture {
@@ -216,10 +216,11 @@ fun ExplicitInputBar(
                     },
                     textStyle = TextStyle(
                         color = PosTextPrimary,
-                        fontSize = 13.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     ),
-                    singleLine = true,
+                    singleLine = false,
+                    maxLines = 2,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Done
@@ -262,7 +263,7 @@ fun ExplicitInputBar(
                     ),
                     modifier = Modifier
                         .weight(1f)
-                        .height(42.dp)
+                        .height(50.dp)
                         .testTag("item_name_input_field")
                 )
             }
@@ -311,7 +312,7 @@ fun ExplicitInputBar(
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(38.dp)
+                    .height(46.dp)
                     .testTag("add_item_button")
             ) {
                 Row(
@@ -326,7 +327,7 @@ fun ExplicitInputBar(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = if (isRight) "إضافة الصنف إلى [الشق الأيمن 🔷]" else "إضافة الصنف إلى [الشق الأيسر 🟢]",
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Black
                     )
                 }
