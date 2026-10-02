@@ -18,7 +18,6 @@ object EscPosGenerator {
     private const val RECEIPT_WIDTH = 384
     private const val SIDE_PADDING = 8
     private const val COLUMN_GAP = 8
-    private const val HEADER_HEIGHT = 72
     private const val ROW_PADDING = 5
     private const val NAME_TEXT_SIZE = 13f
     private const val QTY_TEXT_SIZE = 13f
@@ -36,7 +35,8 @@ object EscPosGenerator {
             val leftHeight = wrappedHeight(leftItems.getOrNull(index)?.name, nameWidth)
             maxOf(rightHeight, leftHeight) + ROW_PADDING
         }
-        val height = HEADER_HEIGHT + rowHeights.sum() + 18
+        val contentTop = 97
+        val height = contentTop + rowHeights.sum() + 18
 
         val bitmap = Bitmap.createBitmap(RECEIPT_WIDTH, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap).apply { drawColor(Color.WHITE) }
